@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "datetime.h"
+#include "time.h"
 
 int GetMaxDay(int M, int Y) {
     if (M % 2 == 1) {
@@ -46,13 +47,14 @@ void BacaDATETIME(DATETIME *D) {
 }
 
 void TulisDATETIME(DATETIME D) {
-    printf("%d/%d/%d %d:%d:%d\n", Day(D), Month(D), Year(D), Hour(Time(D)), Minute(Time(D)), Second(Time(D)));
+    printf("%d/%d/%d %d:%d:%d", Day(D), Month(D), Year(D), Hour(Time(D)), Minute(Time(D)), Second(Time(D)));
 }
 boolean DEQ(DATETIME D1, DATETIME D2) {
     return (Day(D1) == Day(D2) && Month(D1) == Month(D2) && Year(D1) == Year(D2) && Hour(Time(D1)) == Hour(Time(D2)) && Minute(Time(D1)) == Minute(Time(D2)) && Second(Time(D1)) == Second(Time(D2)));
 }
 boolean DNEQ(DATETIME D1, DATETIME D2){
-    return !(Day(D1) == Day(D2) && Month(D1) == Month(D2) && Year(D1) == Year(D2) && Hour(Time(D1)) == Hour(Time(D2)) && Minute(Time(D1)) == Minute(Time(D2)) && Second(Time(D1)) == Second(Time(D2)));
+    // return !(Day(D1) == Day(D2) && Month(D1) == Month(D2) && Year(D1) == Year(D2) && Hour(Time(D1)) == Hour(Time(D2)) && Minute(Time(D1)) == Minute(Time(D2)) && Second(Time(D1)) == Second(Time(D2)));
+    return !DEQ(D1,D2);
 }
 boolean DLT(DATETIME D1, DATETIME D2) {
     if (Year(D1) < Year(D2)) {
@@ -97,16 +99,16 @@ DATETIME DATETIMENextNDetik(DATETIME D, int N) {
     if (s >= 86400){
         Day(D) += floor(s/86400);
         s %= 86400;
-        Time(D) = DetikToTIME(s);
         while (Day(D) > GetMaxDay(Month(D), Year(D))){
             Day(D) -= GetMaxDay(Month(D), Year(D));
             Month(D) += 1;
             if (Month(D) > 12){
                 Year(D) += 1;
-                Month(D) = 1;
+                Month(D) -= 12;
             }
         }
     }
+    Time(D) = DetikToTIME(s);
     return D;
 }
 DATETIME DATETIMEPrevNDetik(DATETIME D, int N){
@@ -120,7 +122,6 @@ DATETIME DATETIMEPrevNDetik(DATETIME D, int N){
             Day(D) -= 1;
             s += 86400;
         } 
-        Time(D) = DetikToTIME(s);
         while (Day(D) < 1){
             if (Month(D) == 1){
                 Year(D) -= 1;
@@ -131,69 +132,44 @@ DATETIME DATETIMEPrevNDetik(DATETIME D, int N){
             Day(D) += GetMaxDay(Month(D), Year(D));
         }
     }
+    Time(D) = DetikToTIME(s);
     return D;
 }
+
 long int DATETIMEDurasi(DATETIME DAw, DATETIME DAkh){
-    long int Sakh, Saw;
-    long Dday = 0;
-    int i, j;
-    for (i=Year(DAw); i<Year(DAkh); i++){
-        j = 0;
+    int DayAw = 0, DayAkh = 0;
+    int i;
+    // int selisih_hari = 0;
+    for (i=1; i<Year(DAkh); i++) {
         if (i % 400 == 0) {
-            j = 1;
-        }
-        if (i % 100 == 0) {
-            j = 0;
-        }
-        if (i % 4 == 0) {
-            j = 1;
-        }
-        if (j == 1) {
-            Dday += 366;
+            DayAkh += 366;
+        } else if (i % 100 == 0) {
+            DayAkh += 355;
+        } else if (i % 4 == 0) {
+            DayAkh += 366;
         } else {
-            Dday += 365;
+            DayAkh += 365;
         }
     }
-    for (i=1; i<Month(DAw); i++){
-        if (i % 2 == 1) {
-            Saw += (i < 8) ? 31 : 30;
+    for (i=1; i<Month(DAkh); i++) {
+        DayAkh += GetMaxDay(i,Year(DAkh));
+    }
+    DayAkh += Day(DAkh);
+    for (i=1; i<Year(DAw); i++) {
+        if (i % 400 == 0) {
+            DayAw += 366;
+        } else if (i % 100 == 0) {
+            DayAw += 355;
+        } else if (i % 4 == 0) {
+            DayAw += 366;
         } else {
-            if (i != 2){
-                Saw += (i < 7) ? 30 : 31;
-            } else {
-                if (Year(DAw) % 400 == 0) {
-                    Saw += 29;
-                } else if (Year(DAw) % 100 == 0) {
-                    Saw += 28;
-                } else if (Year(DAw) % 4 == 0) {
-                    Saw += 29;
-                } else {
-                    Saw += 28;
-                }
-            }
+            DayAw += 365;
         }
     }
-    for (i=1; i<Month(DAkh); i++){
-        if (i % 2 == 1) {
-            Sakh += (i < 8) ? 31 : 30;
-        } else {
-            if (i != 2){
-                Sakh += (i < 7) ? 30 : 31;
-            } else {
-                if (Year(DAkh) % 400 == 0) {
-                    Sakh += 29;
-                } else if (Year(DAkh) % 100 == 0) {
-                    Sakh += 28;
-                } else if (Year(DAkh) % 4 == 0) {
-                    Sakh += 29;
-                } else {
-                    Sakh += 28;
-                }
-            }
-        }
+    for (i=1; i<Month(DAw); i++) {
+        DayAw += GetMaxDay(i,Year(DAw));
     }
-    Sakh += Day(DAkh);
-    Saw += Day(DAw);
-    Dday += (Sakh-Saw);
-    return (Dday*86400 + Durasi(Time(DAw), Time(DAkh)));
+    DayAw += Day(DAw);
+
+    return (DayAkh - DayAw) * 86400 + TIMEToDetik(Time(DAkh)) - TIMEToDetik(Time(DAw));
 }
