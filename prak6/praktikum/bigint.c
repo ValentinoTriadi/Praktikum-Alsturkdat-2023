@@ -14,7 +14,22 @@ int main(){
     CreateEmpty(&hasil);
     int i=0, j=0;
     int val1, val2, hitung;
-    Word a1, a2;
+    Word a1,a2;
+
+    // START();
+    // IgnoreBlanks();
+    // while(currentChar != ' '){
+    //     ADV();
+    //     listWords1.TabWord[listWords1.Length] = currentChar;
+    //     listWords1.Length++;
+    // }
+    // IgnoreBlanks();
+    // while(currentChar != MARK){
+    //     ADV();
+    //     IgnoreBlanks();
+    //     listWords2.TabWord[listWords2.Length] = currentChar;
+    //     listWords2.Length++;
+    // }
     
 
     // baca
@@ -31,7 +46,7 @@ int main(){
     }
 
     int sisa = 0;
-    while (!IsEmpty(s2)){
+    while (!IsEmpty(s2) && !IsEmpty(s1)){
         Pop(&s1, &val1);
         Pop(&s2, &val2);
         hitung = val1 - val2 + sisa;
